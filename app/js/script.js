@@ -16,6 +16,13 @@ axios
   .catch((err) => console.log(err));
 
 
+// Add Event Listener to data panel
+dataPanel.addEventListener("click", function onPanelClicked(event) {
+  if (event.target.matches(".btn-show-movie")) {
+    console.log(event.target);
+  }
+});
+
 
 //renderMovieList function
 function renderMovieList(data) {
