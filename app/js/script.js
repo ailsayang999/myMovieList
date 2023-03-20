@@ -2,18 +2,20 @@ const BASE_URL = "https://webdev.alphacamp.io";
 const INDEX_URL = BASE_URL + "/api/movies";
 const POSTER_URL = BASE_URL + "/posters/";
 const movies = [];
+let filteredMovies = [];
 const dataPanel = document.querySelector("#data-panel");
+const paginator = document.querySelector("#paginator");
 const searchForm = document.querySelector("#search-form");
 const searchInput = document.querySelector("#search-input"); 
-
+const MOVIES_PER_PAGE = 12;
 
 // axios get INDEX_URL
 axios
   .get(INDEX_URL)
   .then((response) => {
     movies.push(...response.data.results);
-    console.log(movies);
-    renderMovieList(movies);
+    renderPaginator(movies.length); //把movies裡面item的總數量(amount)帶入
+    renderMovieList(getMoviesByPage(1)); //一開始進來時先停留在第一頁
   })
   .catch((err) => console.log(err));
 
@@ -29,6 +31,18 @@ dataPanel.addEventListener("click", function onPanelClicked(event) {
 });
 
 
+//Add event listener to paginator
+paginator.addEventListener('click', function onPaginatorClicked(event){
+  //如果被點擊的不是 a 標籤，結束
+  if (event.target.tagName !== "A") return;
+
+  //透過 dataset 取得被點擊的頁數
+  const page = Number(event.target.dataset.page);
+  //更新畫面
+  renderMovieList(getMoviesByPage(page));
+})
+
+
 
 //搜尋關鍵字：Add Event Listener to searchForm 
 searchForm.addEventListener("submit", function onSearchFormSubmitted(event) {
@@ -38,7 +52,6 @@ searchForm.addEventListener("submit", function onSearchFormSubmitted(event) {
   const keyword = searchInput.value.trim().toLowerCase();
   //儲存符合篩選條件的項目
   //條件篩選 (filter裡面是一個function) 當使用者沒有輸入任何關鍵字時，畫面顯示全部電影 ( 在 include () 中傳入空字串，所有項目都會通過篩選）
-  let filteredMovies = []
   filteredMovies = movies.filter((movie) =>
     movie.title.toLowerCase().includes(keyword)
   );
@@ -47,7 +60,10 @@ searchForm.addEventListener("submit", function onSearchFormSubmitted(event) {
     return window.alert(`您輸入的關鍵字：${keyword} 沒有符合條件的電影`);
   }
 
-  renderMovieList(filteredMovies);
+  //重製分頁器
+  renderPaginator(filteredMovies.length);
+  //重新輸出至畫面
+  renderMovieList(getMoviesByPage(1));
 });
 
 
@@ -78,6 +94,23 @@ function renderMovieList(data) {
   });
   dataPanel.innerHTML = rawHTML;
 }
+
+
+//Render Pagination
+function renderPaginator(amount) {
+  //計算總頁數
+  const numberOfPages = Math.ceil(amount / MOVIES_PER_PAGE);
+  //製作 template
+  let rawHTML = "";
+
+  for (let page = 1; page <= numberOfPages; page++) {
+    rawHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${page}">${page}</a></li>`;
+  }
+  //放回 HTML
+  paginator.innerHTML = rawHTML;
+  // console.log(paginator)
+}
+
 
 
 //Add showMovieModal() to request Show API
@@ -120,4 +153,16 @@ function addToFavorite(id){
 
   //更新localStorage裡favoriteMovies這個key所對應到的新value(也就是更新後的favoriteMovieList)
   localStorage.setItem("favoriteMovies", JSON.stringify(favoriteMovieList));
+}
+
+
+//分頁器：getMoviesByPage，當我輸入頁數時，這個函式要給我這頁的資料 (slice函式不會影響到原本的movies內部資料，而是會切出新的陣列)
+function getMoviesByPage(page) {
+  const data = filteredMovies.length ? filteredMovies : movies;
+
+  //計算起始 index
+  const startIndex = (page - 1) * MOVIES_PER_PAGE;
+  //回傳切割後的新陣列
+  // return movies.slice(startIndex, startIndex + MOVIES_PER_PAGE);
+  return data.slice(startIndex, startIndex + MOVIES_PER_PAGE);
 }
