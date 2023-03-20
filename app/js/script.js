@@ -27,6 +27,29 @@ dataPanel.addEventListener("click", function onPanelClicked(event) {
 });
 
 
+
+//搜尋關鍵字：Add Event Listener to searchForm 
+searchForm.addEventListener("submit", function onSearchFormSubmitted(event) {
+  //取消預設事件
+  event.preventDefault();
+  //取得搜尋關鍵字
+  const keyword = searchInput.value.trim().toLowerCase();
+  //儲存符合篩選條件的項目
+  //條件篩選 (filter裡面是一個function) 當使用者沒有輸入任何關鍵字時，畫面顯示全部電影 ( 在 include () 中傳入空字串，所有項目都會通過篩選）
+  let filteredMovies = []
+  filteredMovies = movies.filter((movie) =>
+    movie.title.toLowerCase().includes(keyword)
+  );
+  //錯誤處理：無符合條件的結果
+  if (filteredMovies.length === 0) {
+    return window.alert(`您輸入的關鍵字：${keyword} 沒有符合條件的電影`);
+  }
+
+  renderMovieList(filteredMovies);
+});
+
+
+
 //renderMovieList function
 function renderMovieList(data) {
   let rawHTML = "";
@@ -70,22 +93,4 @@ function showMovieModal(id) {
   });
 }
 
-//搜尋關鍵字：Add Event Listener to searchForm 
-searchForm.addEventListener("submit", function onSearchFormSubmitted(event) {
-  //取消預設事件
-  event.preventDefault();
-  //取得搜尋關鍵字
-  const keyword = searchInput.value.trim().toLowerCase();
-  //儲存符合篩選條件的項目
-  //條件篩選 (filter裡面是一個function) 當使用者沒有輸入任何關鍵字時，畫面顯示全部電影 ( 在 include () 中傳入空字串，所有項目都會通過篩選）
-  let filteredMovies = []
-  filteredMovies = movies.filter((movie) =>
-    movie.title.toLowerCase().includes(keyword)
-  );
-  //錯誤處理：無符合條件的結果
-  if (filteredMovies.length === 0) {
-    return window.alert(`您輸入的關鍵字：${keyword} 沒有符合條件的電影`);
-  }
 
-  renderMovieList(filteredMovies);
-});
