@@ -2,13 +2,18 @@ const BASE_URL = "https://webdev.alphacamp.io";
 const INDEX_URL = BASE_URL + "/api/movies";
 const POSTER_URL = BASE_URL + "/posters/";
 const dataPanel = document.querySelector("#data-panel");
+const paginator = document.querySelector("#paginator");
+const MOVIES_PER_PAGE = 12;
 
 // get data from localStorage
 const favoriteMovieList =
   JSON.parse(localStorage.getItem("favoriteMovies")) || [];
 
 
-renderMovieList(favoriteMovieList);
+// 即時Render favoriteMovieList裡第一頁的資料
+renderMovieList(getMoviesByPage(1));
+//render分頁器的長度
+renderPaginator(favoriteMovieList.length);
 
 
 
@@ -22,6 +27,19 @@ dataPanel.addEventListener("click", function onPanelClicked(event) {
   }
 });
 
+
+//pagination標籤上裝上事件監聽器：當你按pagination的頁數時，會重新render每頁該有的資料
+paginator.addEventListener('click', function onPaginatorClicked(event){
+  //如果被點擊的不是 a 標籤，結束
+  if (event.target.tagName !== "A") return;
+
+  //透過 dataset 取得被點擊的頁數
+  const page = Number(event.target.dataset.page);
+  //更新畫面
+  renderMovieList(getMoviesByPage(page));
+})
+
+///////////////////////////////// function area /////////////////////////////////////////
 
 //renderMovieList function
 function renderMovieList(data) {
@@ -49,6 +67,21 @@ function renderMovieList(data) {
   });
   dataPanel.innerHTML = rawHTML;
 }
+
+//Render Pagination
+function renderPaginator(amount) {
+  //計算總頁數
+  const numberOfPages = Math.ceil(amount / MOVIES_PER_PAGE);
+  //製作 template
+  let rawHTML = "";
+
+  for (let page = 1; page <= numberOfPages; page++) {
+    rawHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${page}">${page}</a></li>`;
+  }
+  //放回 HTML
+  paginator.innerHTML = rawHTML;
+}
+
 
 //Add showMovieModal() to request Show API
 function showMovieModal(id) {
@@ -85,4 +118,17 @@ function removeFromFavorite(id){
 
   //即時更新頁面
   renderMovieList(favoriteMovieList);
+}
+
+
+//分頁器：getMoviesByPage，當我輸入頁數時，這個函式要給我這頁的資料 (slice函式不會影響到原本的movies內部資料，而是會切出新的陣列)
+function getMoviesByPage(page) {
+  //filteredMovies.length ? 是條件，如果filteredMovies為true則return filteredMovies，如果movies為true則return movies。如果搜尋結果有東西，條件判斷為 true ，會回傳 filteredMovies，然後用 data 保存回傳值，有就是「如果搜尋清單有東西，就取搜尋清單 filteredMovies，否則就還是取總清單 movies」
+  const data = favoriteMovieList;
+
+  //計算起始 index
+  const startIndex = (page - 1) * MOVIES_PER_PAGE;
+  //回傳切割後的新陣列
+  // return movies.slice(startIndex, startIndex + MOVIES_PER_PAGE);
+  return data.slice(startIndex, startIndex + MOVIES_PER_PAGE);
 }
