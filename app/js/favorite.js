@@ -17,7 +17,9 @@ dataPanel.addEventListener("click", function onPanelClicked(event) {
   if (event.target.matches(".btn-show-movie")) {
     console.log(event.target.dataset.id);
     showMovieModal(event.target.dataset.id);
-  } 
+  } else if (event.target.matches(".btn-remove-favorite")) {
+    removeFromFavorite(Number(event.target.dataset.id));
+  }
 });
 
 
@@ -39,7 +41,7 @@ function renderMovieList(data) {
           <button class="btn btn-primary btn-show-movie" data-bs-toggle="modal" data-bs-target="#movie-modal" data-id="${
             item.id
           }">More</button>
-          <button class="btn btn-info btn-add-favorite">+</button>
+          <button class="btn btn-danger btn-remove-favorite" data-id="${item.id}">X</button>
         </div>
       </div>
     </div>
@@ -63,4 +65,24 @@ function showMovieModal(id) {
       POSTER_URL + data.image
     }" alt="movie-poster" class="img-fluid">`;
   });
+}
+
+
+//remove from Favorite Movie List
+function removeFromFavorite(id){
+  //錯誤處理:如果收藏清單favoriteMovieList是空的，則return結束這個函式。
+  if (!favoriteMovieList || !favoriteMovieList.length) return;
+
+  //找出所要刪除的movie在 favoriteMovieList這個陣列中的index，如果傳入的 id 在收藏清單中不存在則return結束這個函式
+  const movieIndex = favoriteMovieList.findIndex((item) => item.id === id);
+  if (movieIndex === -1) return;
+
+  //刪除該筆電影
+  favoriteMovieList.splice(movieIndex, 1);
+
+  //把更新後的favoriteMovieList，透過直接更改"favoriteMovies"這個key所對應的value，把更新後的favoriteMovieList的資料存到value裡
+  localStorage.setItem("favoriteMovies", JSON.stringify(favoriteMovieList));
+
+  //即時更新頁面
+  renderMovieList(favoriteMovieList);
 }
